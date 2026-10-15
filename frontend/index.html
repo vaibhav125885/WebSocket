@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WebSocket Chat</title>
+</head>
+
+<body>
+
+    <h1>WebSocket Chat</h1>
+
+    <!-- User ID -->
+    <input
+        id="userId"
+        type="text"
+        placeholder="Your User ID"
+    >
+
+    <button onclick="connectWebSocket()">
+        Connect
+    </button>
+
+    <br><br>
+
+
+    <!-- Receiver ID -->
+    <input
+        id="receiverId"
+        type="text"
+        placeholder="Receiver User ID"
+    >
+
+    <br><br>
+
+
+    <!-- Message -->
+    <input
+        id="messageInput"
+        type="text"
+        placeholder="Type your message"
+    >
+
+    <button onclick="sendMessage()">
+        Send
+    </button>
+
+
+    <h2>Messages</h2>
+
+    <div id="messages"></div>
+
+
+    <script>
+
+        let socket = null;
+
+
+        // WebSocket connection
+        function connectWebSocket() {
+
+            const userId =
+                document.getElementById("userId").value;
+
+
+            socket = new WebSocket(
+                `ws://localhost:8000/ws/${userId}`
+            );
+
+
+            // Connection successful
+            socket.onopen = function() {
+
+                console.log("WebSocket connected");
+
+            };
+
+
+            // Message received
+            socket.onmessage = function(event) {
+
+                const data = JSON.parse(event.data);
+
+                const messages =
+                    document.getElementById("messages");
+
+
+                messages.innerHTML += `
+                    <p>
+                        <strong>
+                            ${data.sender_id}:
+                        </strong>
+
+                        ${data.message}
+                    </p>
+                `;
+
+            };
+
+
+            // Error
+            socket.onerror = function(error) {
+
+                console.log(
+                    "WebSocket Error:",
+                    error
+                );
+
+            };
+
+
+            // Connection closed
+            socket.onclose = function() {
+
+                console.log(
+                    "WebSocket connection closed"
+                );
+
+            };
+
+        }
+
+
+        // Send message
+        function sendMessage() {
+
+            const receiverId =
+                document.getElementById("receiverId").value;
+
+
+            const message =
+                document.getElementById("messageInput").value;
+
+
+            const data = {
+
+                receiver_id: receiverId,
+
+                message: message
+
+            };
+
+
+            socket.send(
+                JSON.stringify(data)
+            );
+
+
+            document.getElementById(
+                "messageInput"
+            ).value = "";
+
+        }
+
+    </script>
+
+</body>
+
+</html>
